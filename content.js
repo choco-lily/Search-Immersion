@@ -23,8 +23,28 @@ const defaultSettings = {
   showCalendar: true,
   mediaYT: true,
   mediaYTMusic: true,
-  mediaSpotify: true
+  mediaSpotify: true,
+  mediaBackground: true,
+  showZenMode: true,
+  language: 'auto',
+  bgBlur: '50'
 };
+
+
+function t(key, params = {}) {
+  const translations = window.immersion_i18n || {};
+  const prefs = JSON.parse(localStorage.getItem('immersion_prefs')) || defaultSettings;
+  let lang = prefs.language || 'auto';
+  if (lang === 'auto') {
+    const navLang = navigator.language.slice(0, 2);
+    lang = (navLang === 'ja' || navLang === 'ko') ? navLang : 'en'; 
+  }
+  const dict = translations[lang] || translations.en || {};
+  const enDict = translations.en || {};
+  let str = dict[key] || enDict[key] || key;
+  Object.keys(params).forEach(k => { str = str.replace(`{${k}}`, params[k]); });
+  return str;
+}
 const defaultWallpapers = [
   'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2070',
   'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=2070',
@@ -92,14 +112,14 @@ function initNestHub() {
           <div class="aw-temp" id="w-temp">--°</div>
         </div>
         <div class="aw-footer">
-          <span>高:<span id="w-high">--</span>° 低:<span id="w-low">--</span>°</span>
+          <span>${t('weather_high')}:<span id="w-high">--</span>° ${t('weather_low')}:<span id="w-low">--</span>°</span>
           <span><span id="w-wind">--</span></span>
         </div>
       </div>
 
       <div id="card-news" class="glass-card tilt-card" style="flex:1.2;">
-        <div class="label-std">News</div>
-        <div id="news-list" style="display:flex; flex-direction:column; gap:4px;">Loading...</div>
+        <div class="label-std">${t('news_card')}</div>
+        <div id="news-list" style="display:flex; flex-direction:column; gap:4px;">${t('news_loading')}</div>
       </div>
 
       <div id="card-countdown" class="glass-card tilt-card countdown-card" style="flex:0.8; justify-content:center; align-items:center;">
@@ -128,18 +148,18 @@ function initNestHub() {
       </div>
 
       <div id="memo-area">
-        <input type="text" id="memo-input" placeholder="メモを入力..." value="${savedMemo}" autocomplete="off">
+        <input type="text" id="memo-input" placeholder="${t('memo_placeholder')}" value="${savedMemo}" autocomplete="off">
       </div>
 
       <div class="search-wrapper">
         <span class="search-icon">🔍</span>
-        <input id="search-input" type="text" placeholder="Google 検索..." autocomplete="off">
+        <input id="search-input" type="text" placeholder="${t('search_placeholder')}" autocomplete="off">
       </div>
 
       <div class="dock" id="main-dock">
         <div class="dock-separator"></div>
-        <div class="dock-item tilt-card" id="zen-btn" title="Zenモード">ZEN</div>
-        <div class="dock-item tilt-card" id="settings-btn" title="設定">⚙️</div>
+        <div class="dock-item tilt-card" id="zen-btn" title="${t('zen_mode_tooltip')}">ZEN</div>
+        <div class="dock-item tilt-card" id="settings-btn" title="${t('settings_tooltip')}">⚙️</div>
       </div>
     </div>
 
@@ -163,7 +183,7 @@ function initNestHub() {
       </div>
 
       <div id="card-calendar" class="glass-card tilt-card calendar-card">
-        <div class="label-std" style="text-align:center;"><span id="cal-month">Calendar</span></div>
+        <div class="label-std" style="text-align:center;"><span id="cal-month">${t('calendar_label')}</span></div>
         <div class="cal-grid" id="cal-grid"></div>
         <div class="event-list-area" id="event-list"></div>
       </div>
@@ -172,100 +192,113 @@ function initNestHub() {
     <div id="settings-modal" class="overlay-modal">
       <div class="settings-window">
         <nav class="st-sidebar">
-          <button class="st-tab-btn active" data-tab="tab-general"><span>🏠</span> 一般</button>
-          <button class="st-tab-btn" data-tab="tab-appearance"><span>🎨</span> 外観・時計</button>
-          <button class="st-tab-btn" data-tab="tab-media"><span>🎵</span> メディア連携</button>
-          <button class="st-tab-btn" data-tab="tab-dock"><span>⚓</span> Dock</button>
+          <button class="st-tab-btn active" data-tab="tab-general"><span>🏠</span> ${t('settings_general')}</button>
+          <button class="st-tab-btn" data-tab="tab-appearance"><span>🎨</span> ${t('settings_appearance')}</button>
+          <button class="st-tab-btn" data-tab="tab-media"><span>🎵</span> ${t('settings_media')}</button>
+          <button class="st-tab-btn" data-tab="tab-dock"><span>⚓</span> ${t('settings_dock')}</button>
           <div style="flex:1"></div>
-          <button class="st-tab-btn" data-tab="tab-about"><span>ℹ️</span> 情報</button>
+          <button class="st-tab-btn" data-tab="tab-about"><span>ℹ️</span> ${t('settings_about')}</button>
         </nav>
 
         <div class="st-main">
           <div class="st-header">
-            <span class="st-title" id="st-header-title">一般設定</span>
+            <span class="st-title" id="st-header-title">${t('settings_header_general')}</span>
             <div class="close-modal-btn" id="close-settings">×</div>
           </div>
           
           <div class="st-content-scroll">
             
             <div id="tab-general" class="st-section active">
-              <div class="st-group-title">プロフィール</div>
+              <div class="st-group-title">${t('profile_group')}</div>
               <div class="st-row column-layout">
-                <span>ユーザー名 (挨拶用)</span>
+                <span>${t('username_label')}</span>
                 <div class="input-with-btn">
-                  <input type="text" id="set-user-name" placeholder="名前を入力..." class="st-input">
+                  <input type="text" id="set-user-name" placeholder="${t('username_placeholder')}" class="st-input">
                 </div>
               </div>
 
-              <div class="st-group-title">動作設定</div>
-              <div class="st-row"><span>新しいタブをGoogleにする</span><label class="toggle-switch"><input type="checkbox" id="set-newtab-redirect"><span class="slider"></span></label></div>
+              <div class="st-group-title">${t('behavior_group')}</div>
+              <div class="st-row"><span>${t('language_label')}</span>
+                <select id="set-language" class="st-select">
+                  <option value="auto">${t('lang_auto')}</option>
+                  <option value="ja">${t('lang_ja')}</option>
+                  <option value="en">${t('lang_en')}</option>
+                  <option value="ko">${t('lang_ko')}</option>
+                </select>
+              </div>
+              <div class="st-row"><span>${t('newtab_redirect')}</span><label class="toggle-switch"><input type="checkbox" id="set-newtab-redirect"><span class="slider"></span></label></div>
 
-              <div class="st-group-title">表示モジュール</div>
-              <div class="st-row"><span>挨拶メッセージ</span><label class="toggle-switch"><input type="checkbox" id="set-show-quote"><span class="slider"></span></label></div>
-              <div class="st-row"><span>天気カード</span><label class="toggle-switch"><input type="checkbox" id="set-show-weather"><span class="slider"></span></label></div>
-              <div class="st-row"><span>ニュースカード</span><label class="toggle-switch"><input type="checkbox" id="set-show-news"><span class="slider"></span></label></div>
+              <div class="st-group-title">${t('modules_group')}</div>
+              <div class="st-row"><span>${t('greeting_msg')}</span><label class="toggle-switch"><input type="checkbox" id="set-show-quote"><span class="slider"></span></label></div>
+              <div class="st-row"><span>${t('weather_card')}</span><label class="toggle-switch"><input type="checkbox" id="set-show-weather"><span class="slider"></span></label></div>
+              <div class="st-row"><span>${t('news_card')}</span><label class="toggle-switch"><input type="checkbox" id="set-show-news"><span class="slider"></span></label></div>
               <div class="st-row column-layout">
-                <span>RSS URL (ニュースソース)</span>
+                <span>${t('rss_url_label')}</span>
                 <input type="text" id="set-news-url" placeholder="https://news.yahoo.co.jp/rss/topics/it.xml" class="st-input">
-                <div style="font-size:0.75rem; opacity:0.6; margin-top:4px;">※ RSSフィードのURLを入力してください</div>
+                <div style="font-size:0.75rem; opacity:0.6; margin-top:4px;">${t('rss_url_hint')}</div>
               </div>
 
-              <div class="st-row"><span>カウントダウン</span><label class="toggle-switch"><input type="checkbox" id="set-show-countdown"><span class="slider"></span></label></div>
+              <div class="st-row"><span>${t('countdown_label')}</span><label class="toggle-switch"><input type="checkbox" id="set-show-countdown"><span class="slider"></span></label></div>
+              <div class="st-row"><span>${t('zen_mode_btn')}</span><label class="toggle-switch"><input type="checkbox" id="set-show-zen"><span class="slider"></span></label></div>
               
-              <div class="st-group-title">イベント設定</div>
+              <div class="st-group-title">${t('event_settings_group')}</div>
               <div class="st-row column-layout">
-                <span>カウントダウン対象</span>
-                <input type="text" id="set-cnt-title" placeholder="イベント名" class="st-input" style="margin-bottom:8px;">
+                <span>${t('countdown_target')}</span>
+                <input type="text" id="set-cnt-title" placeholder="${t('event_name_placeholder')}" class="st-input" style="margin-bottom:8px;">
                 <div class="input-with-btn">
                   <input type="datetime-local" id="set-cnt-date" class="st-input">
-                  <button id="btn-apply-cnt" class="st-btn-small">更新</button>
+                  <button id="btn-apply-cnt" class="st-btn-small">${t('update_btn')}</button>
                 </div>
               </div>
             </div>
 
             <div id="tab-appearance" class="st-section">
-              <div class="st-group-title">時計スタイル</div>
-              <div class="st-row"><span>秒を表示</span><label class="toggle-switch"><input type="checkbox" id="set-show-seconds"><span class="slider"></span></label></div>
+              <div class="st-group-title">${t('clock_style_group')}</div>
+              <div class="st-row"><span>${t('show_seconds')}</span><label class="toggle-switch"><input type="checkbox" id="set-show-seconds"><span class="slider"></span></label></div>
               <div class="st-row">
-                <span>フォント</span>
+                <span>${t('font_label')}</span>
                 <select id="set-font" class="st-select">
-                  <option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">標準 (System)</option>
-                  <option value="'Inter', sans-serif">モダン (Inter)</option>
-                  <option value="'Bebas Neue', sans-serif">インパクト (Bebas)</option>
-                  <option value="'Shippori Mincho', serif">明朝体 (Shippori)</option>
-                  <option value="'JetBrains Mono', monospace">Mono (JetBrains)</option>
+                  <option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${t('font_system')}</option>
+                  <option value="'Inter', sans-serif">${t('font_modern')}</option>
+                  <option value="'Bebas Neue', sans-serif">${t('font_impact')}</option>
+                  <option value="'Shippori Mincho', serif">${t('font_mincho')}</option>
+                  <option value="'JetBrains Mono', monospace">${t('font_mono')}</option>
                 </select>
               </div>
-              <div class="st-row"><span>サイズ</span><input type="range" id="set-size" min="4" max="20" step="0.5" class="st-range"></div>
+              <div class="st-row"><span>${t('size_label')}</span><input type="range" id="set-size" min="4" max="20" step="0.5" class="st-range"></div>
 
-              <div class="st-group-title">テーマ・壁紙</div>
-              <div class="st-row"><span>アクセント色</span><input type="color" id="set-accent" class="st-color"></div>
-              <div class="st-row"><span>背景の明るさ</span><input type="range" id="set-bright" min="0.1" max="1.0" step="0.1" class="st-range"></div>
-              <div class="st-row"><span>背景の不透明度</span><input type="range" id="set-opacity" min="0" max="1.0" step="0.1" class="st-range"></div>
-              <div class="st-row"><span>カード透明度</span><input type="range" id="set-glass-opacity" min="0.1" max="0.9" step="0.05" class="st-range"></div>
-              <div class="st-row"><span>焼き付き防止 (5分毎)</span><label class="toggle-switch"><input type="checkbox" id="set-burnin"><span class="slider"></span></label></div>
+              <div class="st-group-title">${t('theme_wallpaper_group')}</div>
+              <div class="st-row"><span>${t('accent_color')}</span><input type="color" id="set-accent" class="st-color"></div>
+              <div class="st-row"><span>${t('bg_brightness')}</span><input type="range" id="set-bright" min="0.1" max="1.0" step="0.1" class="st-range"></div>
+              <div class="st-row"><span>${t('bg_blur')}</span><input type="range" id="set-blur" min="0" max="100" step="1" class="st-range"></div>
+              <div class="st-row"><span>${t('bg_opacity')}</span><input type="range" id="set-opacity" min="0" max="1.0" step="0.1" class="st-range"></div>
+              <div class="st-row"><span>${t('glass_opacity')}</span><input type="range" id="set-glass-opacity" min="0.1" max="0.9" step="0.05" class="st-range"></div>
+              <div class="st-row"><span>${t('burn_in_protection')}</span><label class="toggle-switch"><input type="checkbox" id="set-burnin"><span class="slider"></span></label></div>
               
               <div class="st-row column-layout">
-                <span>カスタム壁紙 URL</span>
+                <span>${t('custom_wallpaper_url')}</span>
                 <div class="input-with-btn">
                   <input type="text" id="set-img" placeholder="https://..." class="st-input">
-                  <button id="btn-apply-img" class="st-btn-small">適用</button>
+                  <button id="btn-apply-img" class="st-btn-small">${t('apply_btn')}</button>
                 </div>
               </div>
             </div>
 
             <div id="tab-media" class="st-section">
-              <div class="st-group-title">連携サービス</div>
+              <div class="st-group-title">${t('service_link_group')}</div>
               <div class="st-row"><span>YouTube</span><label class="toggle-switch"><input type="checkbox" id="set-media-yt"><span class="slider"></span></label></div>
               <div class="st-row"><span>YouTube Music</span><label class="toggle-switch"><input type="checkbox" id="set-media-ytm"><span class="slider"></span></label></div>
               <div class="st-row"><span>Spotify</span><label class="toggle-switch"><input type="checkbox" id="set-media-spotify"><span class="slider"></span></label></div>
-              <div style="font-size:0.8rem; opacity:0.6; padding:10px;">※ バックグラウンドで開いているタブから情報を取得します。</div>
+              
+              <div class="st-row"><span>${t('media_background_label')}</span><label class="toggle-switch"><input type="checkbox" id="set-media-bg"><span class="slider"></span></label></div>
+              
+              <div style="font-size:0.8rem; opacity:0.6; padding:10px;">${t('media_hint')}</div>
             </div>
 
             <div id="tab-dock" class="st-section">
-              <div class="st-group-title">ショートカット編集</div>
+              <div class="st-group-title">${t('shortcut_edit_group')}</div>
               <div id="dock-settings-list"></div>
-              <button id="add-dock-item-btn" class="st-btn" style="margin-top:10px;">+ アイテムを追加</button>
+              <button id="add-dock-item-btn" class="st-btn" style="margin-top:10px;">${t('add_item_btn')}</button>
             </div>
 
             <div id="tab-about" class="st-section">
@@ -285,10 +318,33 @@ function initNestHub() {
 
     <div id="event-modal" class="overlay-modal">
       <div class="glass-card modal-card">
-        <div class="st-header"><span class="st-title" id="ev-modal-date">日付</span><span class="close-modal-btn" id="close-event">×</span></div>
+        <div class="st-header"><span class="st-title" id="ev-modal-date">Date</span><span class="close-modal-btn" id="close-event">×</span></div>
         <div style="padding:20px;">
-           <input type="text" id="ev-input" class="st-input big-input" placeholder="予定を入力..." autocomplete="off">
-           <div class="modal-actions"><button id="ev-delete" class="st-btn danger-btn">削除</button><button id="ev-save" class="st-btn primary-btn">保存</button></div>
+           <input type="text" id="ev-input" class="st-input big-input" placeholder="${t('date_input_placeholder')}" autocomplete="off">
+           <div class="modal-actions"><button id="ev-delete" class="st-btn danger-btn">${t('delete_btn')}</button><button id="ev-save" class="st-btn primary-btn">${t('save_btn')}</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="dock-context-menu" class="dock-context-menu">
+      <div class="dock-context-item" id="ctx-edit"><span>✎</span> ${t('ctx_edit')}</div>
+      <div class="dock-context-item danger" id="ctx-del"><span>🗑</span> ${t('ctx_del')}</div>
+    </div>
+
+    <div id="dock-edit-modal" class="overlay-modal">
+      <div class="glass-card modal-card" style="padding: 20px !important;">
+        <div class="st-header" style="padding:0; height:auto; border:none; margin-bottom:15px;">
+          <span class="st-title">${t('edit_modal_title')}</span>
+          <span class="close-modal-btn" id="close-dock-edit">×</span>
+        </div>
+        <div class="column-layout">
+          <span>${t('icon_label')}</span>
+          <input type="text" id="dock-edit-icon" class="st-input" placeholder="${t('icon_placeholder')}">
+          <span>${t('url_label')}</span>
+          <input type="text" id="dock-edit-url" class="st-input" placeholder="https://...">
+        </div>
+        <div class="modal-actions">
+          <button id="dock-edit-save" class="st-btn primary-btn">${t('save_btn')}</button>
         </div>
       </div>
     </div>
@@ -304,6 +360,7 @@ function initNestHub() {
   applyPreferences(); 
   renderDock();
   initSettingsLogic(); 
+  setupDockContextMenu();
   startClock();
   setupSearch();
   setupMemo();
@@ -319,12 +376,72 @@ function initNestHub() {
   initUpdateChecker();
 }
 
+let contextMenuTargetIndex = -1;
+
+function setupDockContextMenu() {
+  const menu = document.getElementById('dock-context-menu');
+  const editBtn = document.getElementById('ctx-edit');
+  const delBtn = document.getElementById('ctx-del');
+  
+  document.addEventListener('click', (e) => {
+    if (menu) menu.classList.remove('show');
+  });
+
+  if(editBtn) editBtn.onclick = () => {
+     if(contextMenuTargetIndex >= 0) openDockEditModal(contextMenuTargetIndex);
+  };
+  
+  if(delBtn) delBtn.onclick = () => {
+    if(contextMenuTargetIndex >= 0) {
+        const items = getDockItems();
+        if(confirm(t('delete_confirm', { icon: items[contextMenuTargetIndex].icon }))) {
+            items.splice(contextMenuTargetIndex, 1);
+            localStorage.setItem('immersion_dock_items', JSON.stringify(items));
+            renderDock();
+            renderDockSettingsList(); 
+        }
+    }
+  };
+  
+  const modal = document.getElementById('dock-edit-modal');
+  const closeBtn = document.getElementById('close-dock-edit');
+  const saveBtn = document.getElementById('dock-edit-save');
+  
+  if(closeBtn) closeBtn.onclick = () => modal.classList.remove('show');
+  if(modal) modal.onclick = (e) => { if(e.target === modal) modal.classList.remove('show'); };
+  
+  if(saveBtn) saveBtn.onclick = () => {
+      const iconVal = document.getElementById('dock-edit-icon').value;
+      const urlVal = document.getElementById('dock-edit-url').value;
+      if(contextMenuTargetIndex >= 0 && iconVal && urlVal) {
+          const items = getDockItems();
+          items[contextMenuTargetIndex] = { icon: iconVal, url: urlVal };
+          localStorage.setItem('immersion_dock_items', JSON.stringify(items));
+          renderDock();
+          renderDockSettingsList();
+          modal.classList.remove('show');
+      }
+  };
+}
+
+function openDockEditModal(index) {
+    const items = getDockItems();
+    const item = items[index];
+    if(!item) return;
+    document.getElementById('dock-edit-icon').value = item.icon;
+    document.getElementById('dock-edit-url').value = item.url;
+    contextMenuTargetIndex = index; // Ensure consistent index
+    
+    document.getElementById('dock-edit-modal').classList.add('show');
+}
+
 function applyPreferences() {
   const prefs = JSON.parse(localStorage.getItem('immersion_prefs')) || defaultSettings;
   const rootStyle = document.documentElement.style;
   rootStyle.setProperty('--accent', prefs.accent);
   rootStyle.setProperty('--clock-font', prefs.clockFont);
   rootStyle.setProperty('--bg-brightness', prefs.bgBrightness);
+  rootStyle.setProperty('--bg-blur', (prefs.bgBlur || '50') + 'px');
   rootStyle.setProperty('--bg-opacity', prefs.bgOpacity || '1.0');
   rootStyle.setProperty('--glass-opacity', prefs.glassOpacity || '0.55');
   rootStyle.setProperty('--clock-size', (prefs.clockSize || '10') + 'rem');
@@ -340,12 +457,14 @@ function applyPreferences() {
   setVal('set-accent', prefs.accent);
   setVal('set-font', prefs.clockFont);
   setVal('set-bright', prefs.bgBrightness);
+  setVal('set-blur', prefs.bgBlur || '50');
   setVal('set-size', prefs.clockSize || '10');
   setVal('set-opacity', prefs.bgOpacity || '1.0');
   setVal('set-glass-opacity', prefs.glassOpacity || '0.55');
   setVal('set-img', prefs.idleImgUrl || '');
   setVal('set-cnt-title', prefs.cntTitle || '');
   setVal('set-cnt-date', prefs.cntDate || '');
+  setVal('set-language', prefs.language || 'auto');
 
   const setCheck = (id, v) => { const el = document.getElementById(id); if(el) el.checked = v !== false; };
   setCheck('set-burnin', prefs.burnIn);
@@ -360,8 +479,10 @@ function applyPreferences() {
   setCheck('set-media-yt', prefs.mediaYT);
   setCheck('set-media-ytm', prefs.mediaYTMusic);
   setCheck('set-media-spotify', prefs.mediaSpotify);
+  setCheck('set-media-bg', prefs.mediaBackground);
   setCheck('set-media-apple', prefs.mediaApple);
   setCheck('set-media-netflix', prefs.mediaNetflix);
+  setCheck('set-show-zen', prefs.showZenMode);
 
   const toggle = (id, visible) => {
     const el = document.getElementById(id);
@@ -375,6 +496,7 @@ function applyPreferences() {
   toggle('card-countdown', prefs.showCountdown);
   toggle('music-card-container', prefs.showMusic);
   toggle('card-calendar', prefs.showCalendar);
+  toggle('zen-btn', prefs.showZenMode);
 }
 
 function savePreferences() {
@@ -386,12 +508,14 @@ function savePreferences() {
     accent: getVal('set-accent'),
     clockFont: getVal('set-font'),
     bgBrightness: getVal('set-bright'),
+    bgBlur: getVal('set-blur'),
     bgOpacity: getVal('set-opacity'),
     glassOpacity: getVal('set-glass-opacity'),
     clockSize: getVal('set-size'),
     idleImgUrl: getVal('set-img'),
     cntTitle: getVal('set-cnt-title'),
     cntDate: getVal('set-cnt-date'),
+    language: getVal('set-language'),
     burnIn: getChk('set-burnin'),
     showSeconds: getChk('set-show-seconds'),
     showQuote: getChk('set-show-quote'),
@@ -401,11 +525,23 @@ function savePreferences() {
     showCountdown: getChk('set-show-countdown'),
     mediaYT: getChk('set-media-yt'),
     mediaYTMusic: getChk('set-media-ytm'),
-    mediaSpotify: getChk('set-media-spotify')
+    mediaYTMusic: getChk('set-media-ytm'),
+    mediaSpotify: getChk('set-media-spotify'),
+    mediaBackground: getChk('set-media-bg'),
+    showZenMode: getChk('set-show-zen')
   };
   
+  const prevLang = JSON.parse(localStorage.getItem('immersion_prefs'))?.language;
   localStorage.setItem('immersion_prefs', JSON.stringify(prefs));
 
+  if (prevLang !== prefs.language) {
+      document.getElementById('immersion-root')?.remove();
+      initNestHub();
+      // Re-open settings to show change (optional, but good UX)
+      document.getElementById('settings-btn').click();
+      document.getElementById('settings-modal').classList.add('show');
+      return; 
+  }
 
   applyPreferences();      
   setupBurnInProtection(); 
@@ -440,13 +576,15 @@ function initSettingsLogic() {
     };
   });
 
-  ['set-accent', 'set-font', 'set-bright', 'set-size', 'set-opacity', 'set-glass-opacity', 'set-user-name', 'set-news-url'].forEach(id => {
+  ['set-accent', 'set-font', 'set-bright', 'set-blur', 'set-size', 'set-opacity', 'set-glass-opacity', 'set-user-name', 'set-news-url'].forEach(id => {
     document.getElementById(id)?.addEventListener(id === 'set-font' ? 'change' : 'input', savePreferences);
   });
   
+  document.getElementById('set-language')?.addEventListener('change', savePreferences);
+
   [
-    'set-burnin', 'set-show-seconds', 'set-show-quote', 'set-show-weather', 'set-show-news', 'set-show-countdown', 'set-show-music', 'set-show-calendar',
-    'set-media-yt', 'set-media-ytm', 'set-media-spotify', 'set-media-apple', 'set-media-netflix'
+    'set-burnin', 'set-show-seconds', 'set-show-quote', 'set-show-weather', 'set-show-news', 'set-show-countdown', 'set-show-music', 'set-show-calendar', 'set-show-zen',
+    'set-media-yt', 'set-media-ytm', 'set-media-spotify', 'set-media-apple', 'set-media-netflix', 'set-media-bg'
   ].forEach(id => document.getElementById(id)?.addEventListener('change', savePreferences));
 
   document.getElementById('set-newtab-redirect')?.addEventListener('change', (e) => {
@@ -493,9 +631,16 @@ function renderCalendarSystem() {
   const eventList = document.getElementById('event-list');
   const now = new Date();
   const year = now.getFullYear(); const month = now.getMonth();
-  const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-  document.getElementById('cal-month').innerText = `${year}年 ${months[month]}`;
-  grid.innerHTML = ['日','月','火','水','木','金','土'].map(w => `<div class="cal-head">${w}</div>`).join('');
+  const months = [t('jan'), t('feb'), t('mar'), t('apr'), t('may'), t('jun'), t('jul'), t('aug'), t('sep'), t('oct'), t('nov'), t('dec')];
+  // Format Month Year
+  const prefs = JSON.parse(localStorage.getItem('immersion_prefs')) || defaultSettings;
+  let myStr = `${months[month]} ${year}`;
+  if (prefs.language === 'ja' || (!prefs.language && navigator.language.startsWith('ja'))) myStr = `${year}年 ${months[month]}`;
+  else if (prefs.language === 'ko' || (!prefs.language && navigator.language.startsWith('ko'))) myStr = `${year}년 ${months[month]}`;
+
+  document.getElementById('cal-month').innerText = myStr;
+  const days = [t('sun'), t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat')];
+  grid.innerHTML = days.map(w => `<div class="cal-head">${w}</div>`).join('');
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month+1, 0).getDate();
   for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
@@ -513,13 +658,13 @@ function renderCalendarSystem() {
     const k = `event_${year}_${month}_${d}`; const v = localStorage.getItem(k);
     if(v) { h=true; const r=document.createElement('div'); r.className='event-row'; r.innerHTML=`<span class="event-date-badge">${d}</span><span class="event-content">${v}</span>`; r.onclick = () => openEventModal(year, month, d); eventList.appendChild(r); }
   }
-  if(!h) eventList.innerHTML = '<div style="opacity:0.5; font-size:0.8rem; text-align:center; padding:10px;">予定はありません</div>';
+  if(!h) eventList.innerHTML = `<div style="opacity:0.5; font-size:0.8rem; text-align:center; padding:10px;">${t('no_events')}</div>`;
 }
 function openEventModal(year, month, day) {
   const modal = document.getElementById('event-modal'); const input = document.getElementById('ev-input'); const dateLabel = document.getElementById('ev-modal-date');
   const closeBtn = document.getElementById('close-event'); const saveBtn = document.getElementById('ev-save'); const delBtn = document.getElementById('ev-delete');
   currentEventKey = `event_${year}_${month}_${day}`; const currentVal = localStorage.getItem(currentEventKey) || "";
-  dateLabel.innerText = `${month + 1}月${day}日 の予定`; input.value = currentVal; modal.classList.add('show'); input.focus();
+  dateLabel.innerText = t('date_modal_title', { month: month + 1, day: day }); input.value = currentVal; modal.classList.add('show'); input.focus();
   const close = () => modal.classList.remove('show'); closeBtn.onclick = close; modal.onclick = (e) => { if(e.target === modal) close(); };
   saveBtn.onclick = () => { if(input.value) localStorage.setItem(currentEventKey, input.value); else localStorage.removeItem(currentEventKey); renderCalendarSystem(); close(); };
   delBtn.onclick = () => { localStorage.removeItem(currentEventKey); renderCalendarSystem(); close(); }; input.onkeydown = (e) => { if(e.key === 'Enter') saveBtn.click(); };
@@ -529,7 +674,7 @@ function setupCountdown() {
     const prefs = JSON.parse(localStorage.getItem('immersion_prefs')) || defaultSettings;
     const titleEl = document.getElementById('cnt-label'); const daysEl = document.getElementById('cnt-days'); const hmsEl = document.getElementById('cnt-hms');
     if (!prefs.cntDate) { titleEl.innerText = "NO EVENT"; daysEl.innerText = "--"; hmsEl.innerText = "--:--:--"; return; }
-    titleEl.innerText = prefs.cntTitle || "EVENT";
+    titleEl.innerText = prefs.cntTitle || t('event');
     const target = new Date(prefs.cntDate).getTime(); const now = new Date().getTime(); const diff = target - now;
     if (diff < 0) { daysEl.innerText = "0"; hmsEl.innerText = "FINISHED"; } 
     else { const d = Math.floor(diff / (1000 * 60 * 60 * 24)); const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)); const s = Math.floor((diff % (1000 * 60)) / 1000); daysEl.innerText = d; hmsEl.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
@@ -538,14 +683,52 @@ function setupCountdown() {
 function getDockItems() { const saved = localStorage.getItem('immersion_dock_items'); return saved ? JSON.parse(saved) : defaultDockItems; }
 function renderDock() {
   const dock = document.getElementById('main-dock'); const items = getDockItems(); const existing = dock.querySelectorAll('.dynamic-dock-item'); existing.forEach(el => el.remove());
-  items.forEach(item => { const div = document.createElement('div'); div.className = 'dock-item tilt-card dynamic-dock-item'; div.innerText = item.icon; div.title = item.url; div.onclick = () => { if(item.url.includes('%s')) { const input = document.getElementById('search-input'); const v = input.value; window.location.href = v ? item.url.replace('%s', encodeURIComponent(v)) : item.url.split('?')[0]; } else { window.location.href = item.url; } }; dock.insertBefore(div, document.querySelector('.dock-separator')); }); initTiltEffect();
+  items.forEach((item, index) => { 
+    const div = document.createElement('div'); 
+    div.className = 'dock-item tilt-card dynamic-dock-item'; 
+    if (item.icon && (item.icon.startsWith('http') || item.icon.startsWith('data:image'))) {
+        div.style.overflow = 'hidden';
+        div.innerHTML = `<img src="${item.icon}" style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;" onerror="this.style.display='none'; this.parentElement.innerText='${item.icon.replace(/'/g, "\\'")}';">`;
+    } else {
+        div.innerText = item.icon; 
+    }
+    div.title = item.url; 
+    div.onclick = () => { if(item.url.includes('%s')) { const input = document.getElementById('search-input'); const v = input.value; window.location.href = v ? item.url.replace('%s', encodeURIComponent(v)) : item.url.split('?')[0]; } else { window.location.href = item.url; } }; 
+    div.oncontextmenu = (e) => {
+      e.preventDefault(); e.stopPropagation();
+      contextMenuTargetIndex = index;
+      const menu = document.getElementById('dock-context-menu');
+      menu.style.top = e.clientY + 'px'; menu.style.left = e.clientX + 'px';
+      menu.classList.add('show');
+    };
+    dock.insertBefore(div, document.querySelector('.dock-separator')); 
+  }); 
+  initTiltEffect();
 }
 function renderDockSettingsList() {
   const list = document.getElementById('dock-settings-list'); list.innerHTML = ''; const items = getDockItems();
-  items.forEach((item, index) => { const row = document.createElement('div'); row.className = 'dock-setting-row'; row.innerHTML = `<input type="text" class="ds-icon" value="${item.icon}" placeholder="絵"><input type="text" class="ds-url" value="${item.url}" placeholder="URL"><button class="ds-del">×</button>`; const iI = row.querySelector('.ds-icon'); const uI = row.querySelector('.ds-url'); const d = row.querySelector('.ds-del'); const save = () => { items[index].icon = iI.value; items[index].url = uI.value; localStorage.setItem('immersion_dock_items', JSON.stringify(items)); renderDock(); }; iI.oninput = save; uI.oninput = save; d.onclick = () => { items.splice(index, 1); localStorage.setItem('immersion_dock_items', JSON.stringify(items)); renderDockSettingsList(); renderDock(); }; list.appendChild(row); });
+  items.forEach((item, index) => { 
+    const row = document.createElement('div'); 
+    row.className = 'dock-setting-row'; 
+    row.innerHTML = `
+      <div class="ds-label">${t('icon_label')}</div>
+      <input type="text" class="ds-icon" value="${item.icon}" placeholder="${t('icon_placeholder')}">
+      <div class="ds-label" style="margin-top:4px;">${t('url_label')}</div>
+      <input type="text" class="ds-url" value="${item.url}" placeholder="${t('url_label')}">
+      <button class="ds-del">×</button>
+    `; 
+    const iI = row.querySelector('.ds-icon'); 
+    const uI = row.querySelector('.ds-url'); 
+    const d = row.querySelector('.ds-del'); 
+    const save = () => { items[index].icon = iI.value; items[index].url = uI.value; localStorage.setItem('immersion_dock_items', JSON.stringify(items)); renderDock(); }; 
+    iI.oninput = save; uI.oninput = save; 
+    d.onclick = () => { items.splice(index, 1); localStorage.setItem('immersion_dock_items', JSON.stringify(items)); renderDockSettingsList(); renderDock(); }; 
+    list.appendChild(row); 
+  });
 }
+
 function addDockItem() { const items = getDockItems(); items.push({ icon: "🔗", url: "https://example.com" }); localStorage.setItem('immersion_dock_items', JSON.stringify(items)); renderDockSettingsList(); renderDock(); }
-function setupSearch() { const input = document.getElementById('search-input'); input.focus(); input.addEventListener('keydown', (e) => { if(e.key === 'Enter' && input.value) window.location.href = `https://www.google.com/search?q=${encodeURIComponent(input.value)}`; }); document.getElementById('change-city').onclick = () => { const c = prompt("都市名を入力してください (英語):", "Tokyo"); if(c) { localStorage.setItem('immersion_city', c); fetchWeather(c); } }; }
+function setupSearch() { const input = document.getElementById('search-input'); input.focus(); input.addEventListener('keydown', (e) => { if(e.key === 'Enter' && input.value) window.location.href = `https://www.google.com/search?q=${encodeURIComponent(input.value)}`; }); document.getElementById('change-city').onclick = () => { const c = prompt("City Name (English):", "Tokyo"); if(c) { localStorage.setItem('immersion_city', c); fetchWeather(c); } }; }
 function setupZenMode() { const btn = document.getElementById('zen-btn'); if (btn) btn.onclick = (e) => { e.stopPropagation(); document.body.classList.toggle('zen-active'); }; }
 function setupMemo() { const input = document.getElementById('memo-input'); input.addEventListener('input', () => { localStorage.setItem('immersion_memo', input.value); }); }
 function updateQuote() {
@@ -558,17 +741,17 @@ function updateQuote() {
   let subText = "";
 
   if (hour >= 5 && hour < 11) {
-    greeting = `おはようございます、${name}さん`;
-    subText = "今日も良い一日を。";
+    greeting = t('greeting_morning', { name });
+    subText = t('subtext_morning');
   } else if (hour >= 11 && hour < 18) {
-    greeting = `こんにちは、${name}さん`;
-    subText = "午後の作業も頑張りましょう。";
+    greeting = t('greeting_afternoon', { name });
+    subText = t('subtext_afternoon');
   } else if (hour >= 18 && hour < 23) {
-    greeting = `こんばんは、${name}さん`;
-    subText = "今日もお疲れ様でした。";
+    greeting = t('greeting_evening', { name });
+    subText = t('subtext_evening');
   } else {
-    greeting = `こんばんは、${name}さん`; 
-    subText = "おやすみなさい。";
+    greeting = t('greeting_night', { name }); 
+    subText = t('subtext_night');
   }
 
   const qText = document.getElementById('quote-text');
@@ -583,8 +766,18 @@ function startClock() {
     const prefs = JSON.parse(localStorage.getItem('immersion_prefs')) || defaultSettings;
     const now = new Date(); const h = String(now.getHours()).padStart(2,'0'); const m = String(now.getMinutes()).padStart(2,'0');
     let timeStr = `${h}:${m}`; if(prefs.showSeconds) timeStr += `:${String(now.getSeconds()).padStart(2,'0')}`;
-    const days = ['日', '月', '火', '水', '木', '金', '土']; const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-    document.getElementById('clock-time').innerText = timeStr; document.getElementById('clock-date').innerText = `${months[now.getMonth()]}${now.getDate()}日 (${days[now.getDay()]})`;
+    const days = [t('sun'), t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat')];
+    const months = [t('jan'), t('feb'), t('mar'), t('apr'), t('may'), t('jun'), t('jul'), t('aug'), t('sep'), t('oct'), t('nov'), t('dec')];
+    const mStr = months[now.getMonth()];
+    const dStr = days[now.getDay()];
+    // Simple localization for date
+    let dateStr = `${mStr} ${now.getDate()} (${dStr})`;
+    if (prefs.language === 'ja' || (!prefs.language && navigator.language.startsWith('ja'))) {
+         dateStr = `${mStr}${now.getDate()}日 (${dStr})`;
+    } else if (prefs.language === 'ko' || (!prefs.language && navigator.language.startsWith('ko'))) {
+         dateStr = `${mStr} ${now.getDate()}일 (${dStr})`;
+    }
+    document.getElementById('clock-time').innerText = timeStr; document.getElementById('clock-date').innerText = dateStr;
   }; setInterval(update, 1000); update();
 }
 function fetchNews() { 
@@ -593,13 +786,13 @@ function fetchNews() {
   const list = document.getElementById("news-list");
 
   if (!targetUrl) {
-    list.innerHTML = '<div style="padding:10px; opacity:0.7; text-align:center;">設定からRSSのURLを<br>入力してください</div>';
+    list.innerHTML = `<div style="padding:10px; opacity:0.7; text-align:center;">${t('news_rss_config_prompt')}</div>`;
     return;
   }
 
   chrome.runtime.sendMessage({ action: "fetchNews", url: targetUrl }, (res) => { 
     if(!res || res.error || !res.data) {
-        list.innerHTML = '<div style="padding:10px; opacity:0.7; text-align:center;">取得できませんでした</div>';
+        list.innerHTML = `<div style="padding:10px; opacity:0.7; text-align:center;">${t('news_error')}</div>`;
         return;
     }
     
@@ -611,7 +804,7 @@ function fetchNews() {
       list.innerHTML = ""; 
       
       if (items.length === 0) {
-         list.innerHTML = '<div style="padding:10px; opacity:0.7; text-align:center;">記事が見つかりません</div>';
+         list.innerHTML = `<div style="padding:10px; opacity:0.7; text-align:center;">${t('news_no_articles')}</div>`;
          return;
       }
 
@@ -625,13 +818,13 @@ function fetchNews() {
         list.appendChild(div); 
       }
     } catch(e) {
-      list.innerHTML = '<div style="padding:10px; opacity:0.7; text-align:center;">RSS形式エラー</div>';
+      list.innerHTML = `<div style="padding:10px; opacity:0.7; text-align:center;">${t('news_rss_error')}</div>`;
     }
   }); 
 }
 
 
-function fetchWeather(city) { chrome.runtime.sendMessage({ action: "fetchWeather", city: city }, (res) => { if(!res?.data) return; const w = res.data.current_weather; document.getElementById('w-temp').innerText = `${Math.round(w.temperature)}°`; document.getElementById('w-high').innerText = Math.round(w.temperature + 3); document.getElementById('w-low').innerText = Math.round(w.temperature - 2); document.getElementById('w-wind').innerText = `${w.windspeed}km/h`; document.getElementById('change-city').innerText = `📍 ${city}`; let icon = "☁️"; let text = "曇り"; const code = w.weathercode; if(code === 0) { icon = "☀️"; text = "快晴"; } else if(code <= 3) { icon = "⛅️"; text = "晴れ/曇り"; } else if(code >= 51) { icon = "🌧"; text = "雨"; } document.getElementById('w-icon').innerText = icon; document.getElementById('w-cond').innerText = text; }); }
+function fetchWeather(city) { chrome.runtime.sendMessage({ action: "fetchWeather", city: city }, (res) => { if(!res?.data) return; const w = res.data.current_weather; document.getElementById('w-temp').innerText = `${Math.round(w.temperature)}°`; document.getElementById('w-high').innerText = Math.round(w.temperature + 3); document.getElementById('w-low').innerText = Math.round(w.temperature - 2); document.getElementById('w-wind').innerText = `${w.windspeed}km/h`; document.getElementById('change-city').innerText = `📍 ${city}`; let icon = "☁️"; let text = t('weather_cloudy'); const code = w.weathercode; if(code === 0) { icon = "☀️"; text = t('weather_clear'); } else if(code <= 3) { icon = "⛅️"; text = t('weather_sunny'); } else if(code >= 51) { icon = "🌧"; text = t('weather_rain'); } document.getElementById('w-icon').innerText = icon; document.getElementById('w-cond').innerText = text; }); }
 function initTiltEffect() { const cards = document.querySelectorAll('.tilt-card'); cards.forEach(card => { card.onmousemove = (e) => { const r = card.getBoundingClientRect(); const x = e.clientX - r.left; const y = e.clientY - r.top; const cX = r.width / 2; const cY = r.height / 2; const rX = ((y - cY) / cY) * -6; const rY = ((x - cX) / cX) * 6; card.style.transform = `perspective(1000px) rotateX(${rX}deg) rotateY(${rY}deg) scale(1.02)`; }; card.onmouseleave = () => { card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`; }; }); }
 
 function startMediaSync() {
@@ -685,17 +878,40 @@ function startMediaSync() {
           document.getElementById('btn-play').innerText = d.isPlaying ? "⏸" : "▶";
           if (d.artwork) {
              document.getElementById('album-art').style.backgroundImage = `url(${d.artwork})`;
-             if(currentArt !== d.artwork && bgLayer) { currentArt = d.artwork; bgLayer.style.backgroundImage = `url(${d.artwork})`; }
+             if(prefs.mediaBackground && currentArt !== d.artwork && bgLayer) { 
+                 currentArt = d.artwork; 
+                 bgLayer.style.backgroundImage = `url(${d.artwork})`; 
+             } else if (!prefs.mediaBackground && currentArt !== 'default' && bgLayer) {
+                 // Revert to default if setting is off but art was set
+                 currentArt = 'default';
+                 const p = JSON.parse(localStorage.getItem('immersion_prefs')) || defaultSettings;
+                 const targetImg = (p.idleImgUrl && p.idleImgUrl.startsWith('http')) ? p.idleImgUrl : sessionIdleArt;
+                 bgLayer.style.backgroundImage = `url('${targetImg}')`;
+             }
           }
         } else {
           container?.classList.remove('music-active'); container?.classList.add('music-idle');
           const now = new Date();
           const days = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
           const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-          document.getElementById('idle-day').innerText = days[now.getDay()];
-          document.getElementById('idle-date').innerText = now.getDate();
-          document.getElementById('idle-month').innerText = `${now.getFullYear()}年 ${months[now.getMonth()]}`;
-          if(currentArt !== 'default' && bgLayer) { 
+    document.getElementById('idle-day').innerText = t('sunday'); // Need localization for idle day too, using existing long names?
+    // Actually full day names are not in valid keys yet completely (only small ones?).
+    // I added sunday...saturday to dictionaries.
+    const longDays = [t('sunday'), t('monday'), t('tuesday'), t('wednesday'), t('thursday'), t('friday'), t('saturday')];
+    document.getElementById('idle-day').innerText = longDays[now.getDay()];
+    document.getElementById('idle-date').innerText = now.getDate();
+    
+    // Idle month format
+    let idleMonthStr = `${t('dec')} ${now.getFullYear()}`; // Approximation, need t('month') array usage
+    const mVals = [t('jan'), t('feb'), t('mar'), t('apr'), t('may'), t('jun'), t('jul'), t('aug'), t('sep'), t('oct'), t('nov'), t('dec')];
+    const prefs = JSON.parse(localStorage.getItem('immersion_prefs')) || defaultSettings;
+    
+    if(prefs.language === 'ja' || (!prefs.language && navigator.language.startsWith('ja'))) idleMonthStr = `${now.getFullYear()}年 ${mVals[now.getMonth()]}`;
+    else if(prefs.language === 'ko' || (!prefs.language && navigator.language.startsWith('ko'))) idleMonthStr = `${now.getFullYear()}년 ${mVals[now.getMonth()]}`;
+    else idleMonthStr = `${mVals[now.getMonth()]} ${now.getFullYear()}`; // EN
+    
+    document.getElementById('idle-month').innerText = idleMonthStr;
+    if(currentArt !== 'default' && bgLayer) { 
             currentArt = 'default'; 
             const p = JSON.parse(localStorage.getItem('immersion_prefs')) || defaultSettings;
             const targetImg = (p.idleImgUrl && p.idleImgUrl.startsWith('http')) ? p.idleImgUrl : sessionIdleArt;
@@ -777,11 +993,11 @@ function showUpdateBanner(newVer, linkUrl) {
 
   banner.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <span style="font-weight:700; color:#50E3C2; letter-spacing:0.05em;">UPDATE AVAILABLE</span>
+      <span style="font-weight:700; color:#50E3C2; letter-spacing:0.05em;">${t('update_available')}</span>
       <span id="close-update-btn" style="font-size:1.4rem; line-height:1; cursor:pointer; opacity:0.6;">×</span>
     </div>
     <div style="font-size:0.9rem; color:rgba(255,255,255,0.8); line-height:1.4;">
-      最新版 <b>v${newVer}</b> が公開されました。<br>ここからダウンロードできます。
+      ${t('update_desc', {version: newVer})}
     </div>
   `;
 
