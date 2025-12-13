@@ -784,7 +784,6 @@ function setupSearch() {
   };
   
   setupSearchAutocomplete(input);
-  input.focus();
 }
 
 function setupSearchAutocomplete(input) {
