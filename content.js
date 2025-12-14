@@ -365,6 +365,7 @@ function initNestHub() {
   initSettingsLogic(); 
   setupDockContextMenu();
   startClock();
+  focusSearchInput();
   setupSearch();
   setupMemo();
   setupCountdown();
@@ -1294,4 +1295,12 @@ function showUpdateBanner(newVer, linkUrl) {
     banner.style.opacity = '1';
     banner.style.transform = 'translateY(0)';
   }, 100);
+}
+
+function focusSearchInput() {
+  const input = document.getElementById('search-input');
+  if (input) {
+    input.focus();
+    input.select();
+  }
 }
